@@ -171,3 +171,98 @@ if (heroTitle) {
   // Already has HTML — just add a blinking cursor via CSS class
   heroTitle.classList.add('typed');
 }
+
+// ---- CALL REQUEST MODAL + FORM ----
+const callRequestModal = document.getElementById('call-request-modal');
+const openCallRequestBtn = document.getElementById('open-call-request');
+const closeCallRequestBtn = document.getElementById('close-call-request');
+const callRequestForm = document.getElementById('call-request-form');
+
+function openCallRequestModal() {
+  if (!callRequestModal) return;
+  callRequestModal.hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCallRequestModal() {
+  if (!callRequestModal) return;
+  callRequestModal.hidden = true;
+  document.body.style.overflow = '';
+}
+
+if (openCallRequestBtn) {
+  openCallRequestBtn.addEventListener('click', openCallRequestModal);
+}
+
+if (closeCallRequestBtn) {
+  closeCallRequestBtn.addEventListener('click', closeCallRequestModal);
+}
+
+if (callRequestModal) {
+  callRequestModal.addEventListener('click', (e) => {
+    if (e.target === callRequestModal) closeCallRequestModal();
+  });
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && callRequestModal && !callRequestModal.hidden) {
+    closeCallRequestModal();
+  }
+});
+
+if (callRequestForm) {
+  callRequestForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!callRequestForm.checkValidity()) {
+      callRequestForm.reportValidity();
+      return;
+    }
+
+    const formData = new FormData(callRequestForm);
+    const submitButton = callRequestForm.querySelector('button[type="submit"]');
+    const noteEl = document.getElementById('call-form-note');
+    const FORM_ENDPOINT = 'https://formsubmit.co/el/sagaco';
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending...';
+    if (noteEl) {
+      noteEl.classList.remove('success', 'error');
+      noteEl.textContent = 'Sending your request...';
+    }
+
+    formData.append('_subject', 'Call Request - Portfolio');
+
+    fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    })
+      .then(() => {
+        callRequestForm.reset();
+        if (noteEl) {
+          noteEl.classList.remove('error');
+          noteEl.classList.add('success');
+          noteEl.textContent = 'Request sent successfully. I will get back to you soon.';
+        }
+        setTimeout(() => {
+          closeCallRequestModal();
+          if (noteEl) {
+            noteEl.classList.remove('success');
+            noteEl.textContent = 'Fill the form and submit. I will get your request by email.';
+          }
+        }, 1200);
+      })
+      .catch(() => {
+        if (noteEl) {
+          noteEl.classList.remove('success');
+          noteEl.classList.add('error');
+          noteEl.textContent = 'Submission failed. Please confirm FormSubmit activation email, then try again.';
+        }
+      })
+      .finally(() => {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Send Call Request';
+      });
+  });
+}
