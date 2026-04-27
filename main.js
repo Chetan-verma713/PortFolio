@@ -5,6 +5,28 @@
 // ---- NAVBAR: scroll effect + active section ----
 const navbar = document.getElementById('navbar');
 const navLinks = document.querySelectorAll('.nav-links li a');
+const themeToggleBtn = document.getElementById('theme-toggle');
+
+// ---- THEME TOGGLE ----
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  if (!themeToggleBtn) return;
+  const isDark = theme === 'dark';
+  themeToggleBtn.textContent = isDark ? 'Light' : 'Dark';
+  themeToggleBtn.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+
+const savedTheme = localStorage.getItem('theme');
+applyTheme(savedTheme === 'light' ? 'light' : 'dark');
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+  });
+}
 
 window.addEventListener('scroll', () => {
   if (window.scrollY > 40) {
@@ -36,11 +58,15 @@ const mobileMenu = document.getElementById('mobile-menu');
 
 hamburger.addEventListener('click', () => {
   mobileMenu.classList.toggle('open');
+  hamburger.setAttribute('aria-expanded', mobileMenu.classList.contains('open') ? 'true' : 'false');
 });
 
 // Close mobile menu on link click
 document.querySelectorAll('.mobile-menu a').forEach(link => {
-  link.addEventListener('click', () => mobileMenu.classList.remove('open'));
+  link.addEventListener('click', () => {
+    mobileMenu.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+  });
 });
 
 // ---- SCROLL REVEAL OBSERVER ----
